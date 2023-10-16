@@ -1,0 +1,11 @@
+﻿  pch.cpp
+  dllmain.cpp
+  traansformationCPP.cpp
+C:\Users\jakub\OneDrive\Pulpit\PPK-lokal\JA\Proj\Gauss5Main\Gauss5CPP\traansformationCPP.cpp(4,5): warning C4273: "test": niespójne powiązanie biblioteki dll
+C:\Users\jakub\OneDrive\Pulpit\PPK-lokal\JA\Proj\Gauss5Main\Gauss5CPP\transformationCPP.h(9,38): message : zobacz poprzednią definicję „test”
+     Trwa tworzenie biblioteki C:\Users\jakub\OneDrive\Pulpit\PPK-lokal\JA\Proj\Gauss5Main\x64\Release\Gauss5CPP.lib i obiektu C:\Users\jakub\OneDrive\Pulpit\PPK-lokal\JA\Proj\Gauss5Main\x64\Release\Gauss5CPP.exp
+  Trwa generowanie kodu
+  Previous IPDB not found, fall back to full compilation.
+  All 2 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Zakończono generowanie kodu
+  Gauss5CPP.vcxproj -> C:\Users\jakub\OneDrive\Pulpit\PPK-lokal\JA\Proj\Gauss5Main\x64\Release\Gauss5CPP.dll

@@ -1,0 +1,2 @@
+LIBRARY Gauss5ASM
+EXPORTS MyProc

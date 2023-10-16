@@ -1,0 +1,3 @@
+﻿  Assembling Gauss5ASM.asm...
+Gauss5ASM.def : error LNK2001: nierozpoznany symbol zewnętrzny MyProc
+C:\Users\jakub\OneDrive\Pulpit\PPK-lokal\JA\Proj\Gauss5Main\x64\Debug\Gauss5ASM.lib : fatal error LNK1120: liczba nierozpoznanych elementów zewnętrznych: 1
