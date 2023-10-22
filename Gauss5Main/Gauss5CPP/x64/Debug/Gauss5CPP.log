@@ -1,8 +1,1 @@
-﻿  pch.cpp
-  dllmain.cpp
-  traansformationCPP.cpp
-C:\Users\jakub\OneDrive\Pulpit\PPK-lokal\JA\Proj\Gauss5Main\Gauss5CPP\traansformationCPP.cpp(4,5): warning C4273: "test": niespójne powiązanie biblioteki dll
-C:\Users\jakub\OneDrive\Pulpit\PPK-lokal\JA\Proj\Gauss5Main\Gauss5CPP\transformationCPP.h(9,38): message : zobacz poprzednią definicję „test”
-  Generowanie kodu...
-     Trwa tworzenie biblioteki C:\Users\jakub\OneDrive\Pulpit\PPK-lokal\JA\Proj\Gauss5Main\x64\Debug\Gauss5CPP.lib i obiektu C:\Users\jakub\OneDrive\Pulpit\PPK-lokal\JA\Proj\Gauss5Main\x64\Debug\Gauss5CPP.exp
-  Gauss5CPP.vcxproj -> C:\Users\jakub\OneDrive\Pulpit\PPK-lokal\JA\Proj\Gauss5Main\x64\Debug\Gauss5CPP.dll
+﻿  Gauss5CPP.vcxproj -> C:\Users\jakub\Desktop\Studia\ProjektJA\Gauss5Main\x64\Debug\Gauss5CPP.dll
