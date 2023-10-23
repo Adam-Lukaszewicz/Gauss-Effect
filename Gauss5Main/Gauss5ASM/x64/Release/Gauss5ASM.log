@@ -1,4 +1,1 @@
-﻿  Assembling Gauss5ASM.asm...
-     Trwa tworzenie biblioteki C:\Users\jakub\Desktop\Studia\ProjektJA\Gauss5Main\x64\Release\Gauss5ASM.lib i obiektu C:\Users\jakub\Desktop\Studia\ProjektJA\Gauss5Main\x64\Release\Gauss5ASM.exp
-  LINK : określono opcję /LTCG, lecz generowanie kodu nie było wymagane; usuń opcję /LTCG z wiersza polecenia konsolidatora w celu podwyższenia wydajności konsolidatora
-  Gauss5ASM.vcxproj -> C:\Users\jakub\Desktop\Studia\ProjektJA\Gauss5Main\x64\Release\Gauss5ASM.dll
+﻿  Gauss5ASM.vcxproj -> C:\Users\jakub\OneDrive\Pulpit\ProjektJA\Gauss5Main\x64\Release\Gauss5ASM.dll

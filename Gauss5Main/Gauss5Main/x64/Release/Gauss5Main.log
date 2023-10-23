@@ -1,7 +1,29 @@
 ﻿  Gauss5Main.cpp
+C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.36.32532\include\type_traits(1586,98): warning C4244: "argument": konwersja z "unsigned __int64" do "uint32_t", możliwa utrata danych
+C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.36.32532\include\thread(55,14): message : zobacz odwołanie do kompilowanego tworzenia wystąpienia „void std::invoke<void(__cdecl *)(const char *,uint32_t,uint8_t *,size_t),const char*,unsigned __int64,_Ty*,unsigned __int64>(_Callable &&,_Ty1 &&,unsigned __int64 &&,_Ty *&&,unsigned __int64 &&) noexcept(false)” funkcji szablon
+          with
+          [
+              _Ty=uint8_t,
+              _Callable=void (__cdecl *)(const char *,uint32_t,uint8_t *,size_t),
+              _Ty1=const char *
+          ]
+C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.36.32532\include\thread(62,17): message : zobacz odwołanie do kompilowanego tworzenia wystąpienia „unsigned int std::thread::_Invoke<_Tuple,0,1,2,3,4>(void *) noexcept” funkcji szablon
+C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.36.32532\include\thread(71,40): message : zobacz odwołanie do kompilowanego tworzenia wystąpienia „unsigned int (__cdecl *std::thread::_Get_invoke<_Tuple,0,1,2,3,4>(std::integer_sequence<size_t,0,1,2,3,4>) noexcept)(void *) noexcept” funkcji szablon
+C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.36.32532\include\thread(300,18): message : zobacz odwołanie do kompilowanego tworzenia wystąpienia „void std::thread::_Start<void(__cdecl &)(const char *,uint32_t,uint8_t *,size_t),const char*&,_Ty,unsigned char*,_Ty>(_Fn,const char *&,_Ty &&,unsigned char *&&,_Ty &&)” funkcji szablon
+          with
+          [
+              _Ty=unsigned __int64,
+              _Fn=void (__cdecl &)(const char *,uint32_t,uint8_t *,size_t)
+          ]
+C:\Users\jakub\OneDrive\Pulpit\ProjektJA\Gauss5Main\Gauss5Main\Bitmap.h(123,53): message : zobacz odwołanie do kompilowanego tworzenia wystąpienia „std::jthread::jthread<void(__cdecl &)(const char *,uint32_t,uint8_t *,size_t),const char*&,unsigned __int64,_Ty*,unsigned __int64,0>(_Fn,const char *&,unsigned __int64 &&,_Ty *&&,unsigned __int64 &&)” funkcji szablon
+          with
+          [
+              _Ty=uint8_t,
+              _Fn=void (__cdecl &)(const char *,uint32_t,uint8_t *,size_t)
+          ]
   Trwa generowanie kodu
-  0 of 2 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+  3 of 1282 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     0 functions had inline decision re-evaluated but remain unchanged
   Zakończono generowanie kodu
-  Gauss5Main.vcxproj -> C:\Users\jakub\Desktop\Studia\ProjektJA\Gauss5Main\x64\Release\Gauss5Main.exe
+  Gauss5Main.vcxproj -> C:\Users\jakub\OneDrive\Pulpit\ProjektJA\Gauss5Main\x64\Release\Gauss5Main.exe
