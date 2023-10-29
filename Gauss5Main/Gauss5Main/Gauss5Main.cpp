@@ -6,49 +6,32 @@
 #include <thread>
 #include <random>
 #include "Bitmap.h"
+#include "timer.h"
 
-extern "C" int MyProc(int a, int b);
-
-int wrapFunc(std::vector<int>& a, std::vector<int>& b, int beg, int end) {
-    int max = 0;
-    for (int i = beg; i < end; i++) {
-        if (MyProc(a[i], b[i]) > max) max = MyProc(a[i], b[i]);
-    }
-    return max;
-}
+extern "C" int basicTrfAsm(uint8_t* beginPtr, uint8_t * endPtr);
 
 int main()
 {
-    int threads = 2;
+    int threads = 4;
 
-    std::random_device dev;
-    std::mt19937 rng(dev());
-    std::uniform_int_distribution<std::mt19937::result_type> dist(5, 500);
-    std::uniform_int_distribution<std::mt19937::result_type> size(6, 24);
 
-    int n = size(rng);
-    std::vector<int> a, b;
-    for (int i = 0; i < n; i++) {
-        a.push_back(dist(rng));
-        b.push_back(dist(rng));
+    BMP test("t2_24.bmp", threads);
+    BMP testC("t2_24.bmp", threads);
+    while (test.data.size() % threads != 0) threads--; //Pętla obcinająca ilość wątków do takiej, której uda się równo obsłużyć
+    Timer::start();
+    std::vector<std::jthread> handler;
+    for (int i = 0; i < threads; i++) {
+        handler.push_back(std::jthread(basicTrfAsm, test.data.data() + i * test.data.size()/threads, (test.data.data() + (i+1) * test.data.size()/threads) - 1));
     }
+    //basicTrfAsm(test.data.data(), test.data.data() + test.data.size() - 1);
+    Timer::stop();
+    Timer::start();
+    for (int i = 0; i < threads; i++) {
+        handler.push_back(std::jthread(basicTrf, testC.data.data() + i * testC.data.size() / threads, (testC.data.data() + (i + 1) * testC.data.size() / threads) - 1));
+    }
+    //basicTrf(testC.data.data(), testC.data.data() + testC.data.size() - 1);
+    Timer::stop();
 
-    BMP test("Shapes.bmp", threads);
     test.write("kopia.bmp");
-    BMP unevenTest("t2_24.bmp", threads);
-    unevenTest.write("unevenkopia.bmp");
-
-    int actualThreads = threads;
-
-    while (n % actualThreads != 0) {
-        actualThreads--;
-    }
-    std::vector<std::future<int>> futures;
-
-    for (int i = 0; i < actualThreads; i++) {
-        futures.push_back(std::async(wrapFunc, std::ref(a), std::ref(b), 0 + n / actualThreads * i, n / actualThreads + n / actualThreads * i));
-    }
-    for (int i = 0; i < futures.size(); i++) {
-        std::cout << futures[i].get() << "\n";
-    }
+    testC.write("kopiaC.bmp");
 }

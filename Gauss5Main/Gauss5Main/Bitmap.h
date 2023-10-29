@@ -111,7 +111,7 @@ struct BMP {
 
             data.resize(bmp_info_header.width * bmp_info_header.height * bmp_info_header.bit_count / 8);
 
-            Timer::start();
+            //Timer::start();
             // Here we check if we need to take into account row padding
             if (bmp_info_header.width % 4 == 0) {
                 while (data.size() % threads != 0) {
@@ -139,7 +139,7 @@ struct BMP {
                 }
                 file_header.file_size += static_cast<uint32_t>(data.size()) + bmp_info_header.height * static_cast<uint32_t>(padding_row.size());
             }
-            Timer::stop();
+            //Timer::stop();
         }
         else {
             throw std::runtime_error("Unable to open the input image file.");
