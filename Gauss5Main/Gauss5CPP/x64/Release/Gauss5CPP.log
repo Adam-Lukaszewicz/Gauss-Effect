@@ -1,11 +1,12 @@
-﻿  pch.cpp
-  dllmain.cpp
-  traansformationCPP.cpp
-C:\Users\jakub\OneDrive\Pulpit\ProjektJA\Gauss5Main\Gauss5CPP\traansformationCPP.cpp(5,5): warning C4273: "basicTrf": niespójne powiązanie biblioteki dll
-C:\Users\jakub\OneDrive\Pulpit\ProjektJA\Gauss5Main\Gauss5CPP\transformationCPP.h(9,38): message : zobacz poprzednią definicję „basicTrf”
-     Trwa tworzenie biblioteki C:\Users\jakub\OneDrive\Pulpit\ProjektJA\Gauss5Main\x64\Release\Gauss5CPP.lib i obiektu C:\Users\jakub\OneDrive\Pulpit\ProjektJA\Gauss5Main\x64\Release\Gauss5CPP.exp
+﻿  traansformationCPP.cpp
+C:\Users\jakub\Desktop\Studia\ProjektJA\Gauss5Main\Gauss5CPP\traansformationCPP.cpp(5,5): warning C4273: "basicTrf": niespójne powiązanie biblioteki dll
+C:\Users\jakub\Desktop\Studia\ProjektJA\Gauss5Main\Gauss5CPP\transformationCPP.h(9,38): message : zobacz poprzednią definicję „basicTrf”
+C:\Users\jakub\Desktop\Studia\ProjektJA\Gauss5Main\Gauss5CPP\traansformationCPP.cpp(14,5): warning C4273: "gaussTrf": niespójne powiązanie biblioteki dll
+C:\Users\jakub\Desktop\Studia\ProjektJA\Gauss5Main\Gauss5CPP\transformationCPP.h(11,38): message : zobacz poprzednią definicję „gaussTrf”
+     Trwa tworzenie biblioteki C:\Users\jakub\Desktop\Studia\ProjektJA\Gauss5Main\x64\Release\Gauss5CPP.lib i obiektu C:\Users\jakub\Desktop\Studia\ProjektJA\Gauss5Main\x64\Release\Gauss5CPP.exp
   Trwa generowanie kodu
-  Previous IPDB not found, fall back to full compilation.
-  All 2 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  1 of 3 functions (33.3%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
   Zakończono generowanie kodu
-  Gauss5CPP.vcxproj -> C:\Users\jakub\OneDrive\Pulpit\ProjektJA\Gauss5Main\x64\Release\Gauss5CPP.dll
+  Gauss5CPP.vcxproj -> C:\Users\jakub\Desktop\Studia\ProjektJA\Gauss5Main\x64\Release\Gauss5CPP.dll
