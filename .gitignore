@@ -439,3 +439,5 @@ FodyWeavers.xsd
 # Additional files built by Visual Studio
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudio,c++,assembler
+*.ipch
+Gauss5Main/.vs/Gauss5Main/v17/ipch/AutoPCH/7e6dd473f02f1f31/GAUSS5MAIN.ipch
