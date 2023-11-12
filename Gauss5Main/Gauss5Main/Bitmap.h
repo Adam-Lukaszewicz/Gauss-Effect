@@ -41,33 +41,36 @@ struct BMPColorHeader {
 };
 #pragma pack(pop)
 
-void tR(const char* fname, uint32_t offset, uint8_t* target, size_t size) {
-    std::ifstream inp{fname, std::ios_base::binary};
-    inp.seekg(offset, inp.beg);
-    inp.read((char*)target, size);
-}
-
-void tRUneven(const char* fname, uint32_t offset, uint8_t* target, size_t size, int32_t rowNum, uint32_t rowStride, uint32_t newStride) {
-    std::ifstream inp{fname, std::ios_base::binary};
-    inp.seekg(offset, inp.beg);
-    std::vector<uint8_t> paddingRow(newStride - rowStride);
-    for (int r = 0; r < rowNum; ++r) {
-        inp.read((char*)target + rowStride * r, rowStride);
-        inp.read((char*)paddingRow.data(), paddingRow.size());
-    }
-}
+//void tR(const char* fname, uint32_t offset, uint8_t* target, size_t size) {
+//    std::ifstream inp{fname, std::ios_base::binary};
+//    inp.seekg(offset, inp.beg);
+//    inp.read((char*)target, size);
+//}
+//
+//void tRUneven(const char* fname, uint32_t offset, uint8_t* target, size_t size, int32_t rowNum, uint32_t rowStride, uint32_t newStride) {
+//    std::ifstream inp{fname, std::ios_base::binary};
+//    inp.seekg(offset, inp.beg);
+//    std::vector<uint8_t> paddingRow(newStride - rowStride);
+//    for (int r = 0; r < rowNum; ++r) {
+//        inp.read((char*)target + rowStride * r, rowStride);
+//        inp.read((char*)paddingRow.data(), paddingRow.size());
+//    }
+//}
 
 struct BMP {
     BMPFileHeader file_header;
     BMPInfoHeader bmp_info_header;
     BMPColorHeader bmp_color_header;
     std::vector<uint8_t> data;
+    size_t data_size;
+    uint8_t* beginData;
+    uint8_t* endData;
 
-    BMP(const char* fname, int threads) {
-        read(fname, threads);
+    BMP(const char* fname) {
+        read(fname);
     }
 
-    void read(const char* fname, int threads) {
+    void read(const char* fname) {
         std::ifstream inp{ fname, std::ios_base::binary };
         if (inp) {
             inp.read((char*)&file_header, sizeof(file_header));
@@ -109,37 +112,40 @@ struct BMP {
                 throw std::runtime_error("The program can treat only BMP images with the origin in the bottom left corner!");
             }
 
-            data.resize(bmp_info_header.width * bmp_info_header.height * bmp_info_header.bit_count / 8);
+            data.resize(bmp_info_header.width * bmp_info_header.height * bmp_info_header.bit_count / 8 + (bmp_info_header.width + bmp_info_header.height) * 4 * bmp_info_header.bit_count / 8);
+            data_size = (bmp_info_header.width + 4) * bmp_info_header.height * bmp_info_header.bit_count / 8;
 
-            //Timer::start();
             // Here we check if we need to take into account row padding
-            if (bmp_info_header.width % 4 == 0) {
-                while (data.size() % threads != 0) {
-                    threads--;
-                    //TODO: exception - warto informowaæ u¿tykownika, ¿e wczytywanie nie nast¹pi³o na tylu w¹tkach na ilu mia³o
+            //if (bmp_info_header.width % 4 == 0) {
+            //    inp.read((char*)data.data(), data.size());
+            //    file_header.file_size += static_cast<uint32_t>(data.size());
+            //}
+            //else {
+                uint32_t offset = bmp_info_header.width * 2 * bmp_info_header.bit_count / 8;
+                for (int i = 0; i < offset; i++) {
+                    data[i] = 0;
                 }
-                std::vector<std::jthread> threading;
-                for (int i = 0; i < threads; i++) {
-                    threading.push_back(std::jthread(tR, fname, file_header.offset_data + i * data.size() / threads, data.data() + (i * data.size() / threads), data.size() / threads));
-                    
-                }
-                file_header.file_size += static_cast<uint32_t>(data.size());
-            }
-            else {
                 row_stride = bmp_info_header.width * bmp_info_header.bit_count / 8;
                 uint32_t new_stride = make_stride_aligned(4);
                 std::vector<uint8_t> padding_row(new_stride - row_stride);
-                while (bmp_info_header.height % threads != 0) {
-                    threads--;
-                    //TODO: exception - warto informowaæ u¿tykownika, ¿e wczytywanie nie nast¹pi³o na tylu w¹tkach na ilu mia³o
+
+                for (int y = 0; y < bmp_info_header.height; ++y) {
+                    for (int i = 0; i < 2 * bmp_info_header.bit_count / 8; i++) {
+                        data[offset + (row_stride + 4 * bmp_info_header.bit_count / 8) * y + 2 * bmp_info_header.bit_count / 8 + i] = 0;
+                    }
+                    inp.read((char*)(data.data() + offset + (row_stride + 4 * bmp_info_header.bit_count / 8) * y + 2 * bmp_info_header.bit_count / 8), row_stride);
+                    inp.read((char*)padding_row.data(), padding_row.size());
+                    for (int i = 0; i < 2 * bmp_info_header.bit_count / 8; i++) {
+                        data[offset + (row_stride + 4 * bmp_info_header.bit_count / 8) * y + 2 * bmp_info_header.bit_count / 8 + i + row_stride] = 0;
+                    }
                 }
-                std::vector<std::jthread> threading;
-                for (int i = 0; i < threads; i++) {
-                    threading.push_back(std::jthread(tRUneven, fname, file_header.offset_data + i * new_stride * bmp_info_header.height / threads, data.data() + (i * data.size() / threads), data.size() / threads, bmp_info_header.height / threads, row_stride, new_stride));
+                for (int i = 0; i < offset; i++) {
+                    data[bmp_info_header.width * bmp_info_header.height * bmp_info_header.bit_count / 8 + bmp_info_header.width * 2 * bmp_info_header.bit_count / 8 + bmp_info_header.height * 4 * bmp_info_header.bit_count / 8 + i] = 0;
                 }
                 file_header.file_size += static_cast<uint32_t>(data.size()) + bmp_info_header.height * static_cast<uint32_t>(padding_row.size());
-            }
-            //Timer::stop();
+ //           }
+            beginData = data.data() + bmp_info_header.width * 2 * bmp_info_header.bit_count / 8;
+            endData = data.data() + data_size;
         }
         else {
             throw std::runtime_error("Unable to open the input image file.");
@@ -156,20 +162,19 @@ struct BMP {
                 write_headers_and_data(of);
             }
             else if (bmp_info_header.bit_count == 24) {
-                if (bmp_info_header.width % 4 == 0) {
-                    write_headers_and_data(of);
-                }
-                else {
+                //if (bmp_info_header.width % 4 == 0) {
+                //    write_headers_and_data(of);
+                //}
+                //else {
+                    uint32_t offset = bmp_info_header.width * 2 * bmp_info_header.bit_count / 8;
                     uint32_t new_stride = make_stride_aligned(4);
                     std::vector<uint8_t> padding_row(new_stride - row_stride);
-
                     write_headers(of);
-
                     for (int y = 0; y < bmp_info_header.height; ++y) {
-                        of.write((const char*)(data.data() + row_stride * y), row_stride);
+                        of.write((const char*)(data.data() + offset + (row_stride + 4 * bmp_info_header.bit_count / 8) * y + 2 * bmp_info_header.bit_count / 8), row_stride);
                         of.write((const char*)padding_row.data(), padding_row.size());
                     }
-                }
+//                }
             }
             else {
                 throw std::runtime_error("The program can treat only 24 or 32 bits per pixel BMP files");
