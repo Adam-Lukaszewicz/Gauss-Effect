@@ -127,6 +127,7 @@ struct BMP {
                 }
                 row_stride = bmp_info_header.width * bmp_info_header.bit_count / 8;
                 uint32_t new_stride = make_stride_aligned(4);
+                uint8_t empty = 0;
                 std::vector<uint8_t> padding_row(new_stride - row_stride);
 
                 for (int y = 0; y < bmp_info_header.height; ++y) {
@@ -144,7 +145,7 @@ struct BMP {
                 }
                 file_header.file_size += static_cast<uint32_t>(data.size()) + bmp_info_header.height * static_cast<uint32_t>(padding_row.size());
  //           }
-            beginData = data.data() + bmp_info_header.width * 2 * bmp_info_header.bit_count / 8;
+            beginData = data.data() + bmp_info_header.width * 2 * bmp_info_header.bit_count / 8 + 2 * bmp_info_header.bit_count/8;
             endData = data.data() + data_size;
         }
         else {
