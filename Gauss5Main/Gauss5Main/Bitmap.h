@@ -112,7 +112,7 @@ struct BMP {
                 throw std::runtime_error("The program can treat only BMP images with the origin in the bottom left corner!");
             }
 
-            data.resize(bmp_info_header.width * bmp_info_header.height * bmp_info_header.bit_count / 8 + (bmp_info_header.width + bmp_info_header.height) * 4 * bmp_info_header.bit_count / 8);
+            data.resize((bmp_info_header.width + 4) * (bmp_info_header.height + 4) * bmp_info_header.bit_count / 8);
             data_size = (bmp_info_header.width + 4) * bmp_info_header.height * bmp_info_header.bit_count / 8;
 
             // Here we check if we need to take into account row padding
@@ -121,7 +121,7 @@ struct BMP {
             //    file_header.file_size += static_cast<uint32_t>(data.size());
             //}
             //else {
-                uint32_t offset = bmp_info_header.width * 2 * bmp_info_header.bit_count / 8;
+                uint32_t offset = (bmp_info_header.width + 4) * 2 * bmp_info_header.bit_count / 8;
                 for (int i = 0; i < offset; i++) {
                     data[i] = 0;
                 }
@@ -132,7 +132,7 @@ struct BMP {
 
                 for (int y = 0; y < bmp_info_header.height; ++y) {
                     for (int i = 0; i < 2 * bmp_info_header.bit_count / 8; i++) {
-                        data[offset + (row_stride + 4 * bmp_info_header.bit_count / 8) * y + 2 * bmp_info_header.bit_count / 8 + i] = 0;
+                        data[offset + (row_stride + 4 * bmp_info_header.bit_count / 8) * y + i] = 0;
                     }
                     inp.read((char*)(data.data() + offset + (row_stride + 4 * bmp_info_header.bit_count / 8) * y + 2 * bmp_info_header.bit_count / 8), row_stride);
                     inp.read((char*)padding_row.data(), padding_row.size());
@@ -141,11 +141,11 @@ struct BMP {
                     }
                 }
                 for (int i = 0; i < offset; i++) {
-                    data[bmp_info_header.width * bmp_info_header.height * bmp_info_header.bit_count / 8 + bmp_info_header.width * 2 * bmp_info_header.bit_count / 8 + bmp_info_header.height * 4 * bmp_info_header.bit_count / 8 + i] = 0;
+                    data[(bmp_info_header.width + 4) * (bmp_info_header.height + 2) * bmp_info_header.bit_count / 8 + i] = 0;
                 }
                 file_header.file_size += static_cast<uint32_t>(data.size()) + bmp_info_header.height * static_cast<uint32_t>(padding_row.size());
  //           }
-            beginData = data.data() + bmp_info_header.width * 2 * bmp_info_header.bit_count / 8 + 2 * bmp_info_header.bit_count/8;
+            beginData = data.data() + (bmp_info_header.width+4) * 2 * bmp_info_header.bit_count / 8 + 2 * bmp_info_header.bit_count/8;
             endData = data.data() + data_size;
         }
         else {
@@ -167,7 +167,7 @@ struct BMP {
                 //    write_headers_and_data(of);
                 //}
                 //else {
-                    uint32_t offset = bmp_info_header.width * 2 * bmp_info_header.bit_count / 8;
+                    uint32_t offset = (bmp_info_header.width+4) * 2 * bmp_info_header.bit_count / 8;
                     uint32_t new_stride = make_stride_aligned(4);
                     std::vector<uint8_t> padding_row(new_stride - row_stride);
                     write_headers(of);

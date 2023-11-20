@@ -17,15 +17,15 @@ int gaussTrf(uint8_t* beginPtr, uint8_t* endPtr, int width) {
 	uint8_t* iteratorPtr = beginPtr;
 	while (iteratorPtr != endPtr)
 	{
-		*(iteratorPtr) = (*(iteratorPtr-6) + *(iteratorPtr-3) * 4 + *(iteratorPtr) * 6 + *(iteratorPtr+3) * 4 + *(iteratorPtr+6))/16;
+
+		*(iteratorPtr) = (*(iteratorPtr - 6) + *(iteratorPtr - 3) * 4 + *(iteratorPtr) * 6 + *(iteratorPtr + 3) * 4 + *(iteratorPtr + 6))>>4;
 		iteratorPtr++;
 	}
 	iteratorPtr = beginPtr;
 	while (iteratorPtr != endPtr)
 	{
-		*(iteratorPtr) = (*(iteratorPtr - width * 6) + *(iteratorPtr - width * 3) * 4 + *(iteratorPtr) * 6 + *(iteratorPtr + width * 3) * 4 + *(iteratorPtr + width * 6))/16;
+		*(iteratorPtr) = (*(iteratorPtr - width * 6) + *(iteratorPtr - width * 3) * 4 + *(iteratorPtr) * 6 + *(iteratorPtr + width * 3) * 4 + *(iteratorPtr + width * 6))>>4;
 		iteratorPtr++;
 	}
-	iteratorPtr = beginPtr;
 	return 1;
 }
