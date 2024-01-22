@@ -17,7 +17,7 @@ namespace Timer
         countStart = __rdtsc();
     }
 
-    void stop()
+    double stop()
     {
         stop_counting = std::chrono::high_resolution_clock::now();
         countEnd = __rdtsc();
@@ -26,6 +26,7 @@ namespace Timer
         count = time.count() * 1000;
         std::cout << "Zmierzony czas: " << count << "ms\n";
         std::cout << "Zmierzone cykle: " << countCycle << "\n";
+        return count;
     }
 };
 #endif // !TIMER_H

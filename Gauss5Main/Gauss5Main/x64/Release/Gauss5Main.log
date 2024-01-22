@@ -1,6 +1,13 @@
-﻿  Trwa generowanie kodu
-  0 of 321 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+﻿  Gauss5Main.cpp
+C:\Users\Adam\Desktop\Studia\ProjektJA\Gauss5Main\Gauss5Main\Bitmap.h(129,35): warning C4018: "<": niezgodność typu ze znakiem/bez znaku
+  (kompilowanie pliku źródłowego „Gauss5Main.cpp”)
+  
+C:\Users\Adam\Desktop\Studia\ProjektJA\Gauss5Main\Gauss5Main\Bitmap.h(147,35): warning C4018: "<": niezgodność typu ze znakiem/bez znaku
+  (kompilowanie pliku źródłowego „Gauss5Main.cpp”)
+  
+  Trwa generowanie kodu
+  3 of 974 functions ( 0.3%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
+    1 functions had inline decision re-evaluated but remain unchanged
   Zakończono generowanie kodu
-  Gauss5Main.vcxproj -> C:\Users\jakub\OneDrive\Pulpit\Studia\ProjektJA\Gauss5Main\x64\Release\Gauss5Main.exe
+  Gauss5Main.vcxproj -> C:\Users\Adam\Desktop\Studia\ProjektJA\Gauss5Main\x64\Release\Gauss5Main.exe

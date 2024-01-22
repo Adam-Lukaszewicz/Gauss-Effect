@@ -1,1 +1,18 @@
-﻿  Gauss5CPP.vcxproj -> C:\Users\jakub\OneDrive\Pulpit\Studia\ProjektJA\Gauss5Main\x64\Release\Gauss5CPP.dll
+﻿  traansformationCPP.cpp
+C:\Users\Adam\Desktop\Studia\ProjektJA\Gauss5Main\Gauss5CPP\traansformationCPP.cpp(5,5): warning C4273: "basicTrf": niespójne powiązanie biblioteki dll
+  (kompilowanie pliku źródłowego „/traansformationCPP.cpp”)
+  C:\Users\Adam\Desktop\Studia\ProjektJA\Gauss5Main\Gauss5CPP\transformationCPP.h(9,38):
+  zobacz poprzednią definicję „basicTrf”
+  
+C:\Users\Adam\Desktop\Studia\ProjektJA\Gauss5Main\Gauss5CPP\traansformationCPP.cpp(13,5): warning C4273: "gaussTrf": niespójne powiązanie biblioteki dll
+  (kompilowanie pliku źródłowego „/traansformationCPP.cpp”)
+  C:\Users\Adam\Desktop\Studia\ProjektJA\Gauss5Main\Gauss5CPP\transformationCPP.h(11,38):
+  zobacz poprzednią definicję „gaussTrf”
+  
+     Trwa tworzenie biblioteki C:\Users\Adam\Desktop\Studia\ProjektJA\Gauss5Main\x64\Release\Gauss5CPP.lib i obiektu C:\Users\Adam\Desktop\Studia\ProjektJA\Gauss5Main\x64\Release\Gauss5CPP.exp
+  Trwa generowanie kodu
+  1 of 3 functions (33.3%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  Zakończono generowanie kodu
+  Gauss5CPP.vcxproj -> C:\Users\Adam\Desktop\Studia\ProjektJA\Gauss5Main\x64\Release\Gauss5CPP.dll

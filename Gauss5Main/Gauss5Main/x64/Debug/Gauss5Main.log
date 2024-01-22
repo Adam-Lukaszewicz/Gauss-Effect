@@ -1,2 +1,9 @@
 ﻿  Gauss5Main.cpp
-  Gauss5Main.vcxproj -> C:\Users\jakub\Desktop\Studia\ProjektJA\Gauss5Main\x64\Debug\Gauss5Main.exe
+C:\Users\Adam\Desktop\Studia\ProjektJA\Gauss5Main\Gauss5Main\Bitmap.h(125,35): warning C4018: "<": niezgodność typu ze znakiem/bez znaku
+  (kompilowanie pliku źródłowego „Gauss5Main.cpp”)
+  
+C:\Users\Adam\Desktop\Studia\ProjektJA\Gauss5Main\Gauss5Main\Bitmap.h(143,35): warning C4018: "<": niezgodność typu ze znakiem/bez znaku
+  (kompilowanie pliku źródłowego „Gauss5Main.cpp”)
+  
+Gauss5Main.obj : error LNK2019: nierozpoznany symbol zewnętrzny __imp_gaussTrf przywołany w funkcji main
+C:\Users\Adam\Desktop\Studia\ProjektJA\Gauss5Main\x64\Debug\Gauss5Main.exe : fatal error LNK1120: liczba nierozpoznanych elementów zewnętrznych: 1

@@ -62,13 +62,17 @@ struct BMP {
     BMPInfoHeader bmp_info_header;
     BMPColorHeader bmp_color_header;
     std::vector<uint8_t> data;
-    size_t data_size;
-    uint8_t* beginData;
-    uint8_t* endData;
+    size_t data_size{0};
+    uint8_t* beginData{nullptr};
+    uint8_t* endData{nullptr};
+
+    
 
     BMP(const char* fname) {
         read(fname);
     }
+
+    BMP() {}
 
     void read(const char* fname) {
         std::ifstream inp{ fname, std::ios_base::binary };
@@ -184,6 +188,7 @@ struct BMP {
         else {
             throw std::runtime_error("Unable to open the output image file.");
         }
+        of.close();
     }
 
 
