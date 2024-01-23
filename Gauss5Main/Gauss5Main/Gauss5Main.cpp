@@ -31,13 +31,13 @@ double filterApplication(wxString path, int threads, bool Asm) {
         Timer::start();
         for (int i = 0; i < threads; i++) {
             if (overflowC != 0) {
-                handlerC.push_back(std::thread(gaussTrf, bitmap.beginData + i * bitmap.data_size / threads + (usedOverflowC * 3), (bitmap.beginData + (i + 1) * bitmap.data_size / threads) + 2 + (usedOverflowC * 3), bitmap.bmp_info_header.width + 4));
+                handlerC.push_back(std::thread(gaussTrf, bitmap.beginData + i * bitmap.data_size / threads + (usedOverflowC * 3)-6, (bitmap.beginData + (i + 1) * bitmap.data_size / threads) + 2 + (usedOverflowC * 3)-6, bitmap.bmp_info_header.width + 4));
 
                 overflowC--;
                 usedOverflowC++;
             }
             else {
-                handlerC.push_back(std::thread(gaussTrf, bitmap.beginData + i * bitmap.data_size / threads + (usedOverflowC * 3), (bitmap.beginData + (i + 1) * bitmap.data_size / threads) - 1 + (usedOverflowC * 3), bitmap.bmp_info_header.width + 4));
+                handlerC.push_back(std::thread(gaussTrf, bitmap.beginData + i * bitmap.data_size / threads + (usedOverflowC * 3)-6, (bitmap.beginData + (i + 1) * bitmap.data_size / threads) - 1 + (usedOverflowC * 3)-6, bitmap.bmp_info_header.width + 4));
             }
         }
         for (int i = 0; i < threads; i++) {
