@@ -227,12 +227,14 @@ public:
     wxImagePanel* before;
     wxImagePanel* after;
     wxSlider* threads;
+    wxStaticText* tDisplay;
 
 private:
     void OnLoad(wxCommandEvent& event);
     void OnExit(wxCommandEvent& event);
     void OnAbout(wxCommandEvent& event);
     void OnApply(wxCommandEvent& event);
+    void OnChange(wxCommandEvent& event);
     wxString path;
 };
 
@@ -242,7 +244,8 @@ enum
     ID_Apply = 2,
     ID_Asm = 3,
     ID_Cpp = 4,
-    ID_Threads = 5
+    ID_Threads = 5,
+    ID_Dthreads = 6
 };
 
 bool MyApp::OnInit()
@@ -272,6 +275,7 @@ MyFrame::MyFrame()
     cppButton = new wxRadioButton(this, ID_Asm, _("C++"), wxDefaultPosition, wxDefaultSize, 0L, wxDefaultValidator, _("cppButton"));
     applyButton = new wxButton(this, ID_Apply, _("Apply Filter"), wxDefaultPosition, wxDefaultSize, 0L, wxDefaultValidator, _("applyButton"));
     threads = new wxSlider(this, ID_Threads, 2, 1, 64, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL, wxDefaultValidator, _("threadsSlider"));
+    tDisplay = new wxStaticText(this, ID_Dthreads, wxString::Format(wxT("%d"), (int)threads->GetValue()), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL);
     
 
     SetMenuBar(menuBar);
@@ -280,7 +284,7 @@ MyFrame::MyFrame()
     SetStatusText("Welcome to wxWidgets!");
 
     topBox = new wxGridSizer(1, 3, 3, 3);
-    leftBox = new wxGridSizer(5, 1, 3, 3);
+    leftBox = new wxGridSizer(6, 1, 3, 3);
     buttonBox = new wxGridSizer(1, 2, 3, 3);
     leftBox->Add(new wxStaticText(this, -1, wxT("")), 0, wxEXPAND);
     buttonBox->Add(asmButton, 1, wxALIGN_CENTER);
@@ -288,16 +292,22 @@ MyFrame::MyFrame()
     leftBox->Add(buttonBox, 1, wxEXPAND);
     leftBox->Add(new wxStaticText(this, -1, wxT("")), 0, wxEXPAND);
     leftBox->Add(threads, 0, wxEXPAND, wxALIGN_CENTER);
+    leftBox->Add(tDisplay, 0, wxEXPAND, wxALIGN_CENTER);
     leftBox->Add(applyButton, 1, wxALIGN_CENTER);
     Bind(wxEVT_MENU, &MyFrame::OnLoad, this, ID_Load);
     Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
     Bind(wxEVT_MENU, &MyFrame::OnExit, this, wxID_EXIT);
     Bind(wxEVT_BUTTON, &MyFrame::OnApply, this, ID_Apply);
+    Bind(wxEVT_SLIDER, &MyFrame::OnChange, this, ID_Threads);
 
     topBox->Add(leftBox, 1, wxEXPAND);
     topBox->Add(sizerL, 1, wxEXPAND);
     topBox->Add(sizerR, 1, wxEXPAND);
     SetSizer(topBox);
+}
+
+void MyFrame::OnChange(wxCommandEvent& event) {
+    tDisplay->SetLabel(wxString::Format(wxT("%d"), (int)threads->GetValue()));
 }
 
 void MyFrame::OnExit(wxCommandEvent& event)
