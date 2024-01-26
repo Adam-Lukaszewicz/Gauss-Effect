@@ -10,67 +10,105 @@
 #include "timer.h"
 
 extern "C" int basicTrfAsm(uint8_t* beginPtr, uint8_t * endPtr);
-extern "C" int gaussTrfAsm(uint8_t * beginPtr, uint8_t * endPtr, int width);
+extern "C" int gaussTrfAsm(uint8_t * beginPtr, uint8_t * endPtr, uint8_t* copyBegin, int width);
 
 double filterApplication(wxString path, int threads, bool Asm) {
     BMP bitmap(path);
-    //int threads = 16;
+    BMP blurred(path);
     double time = 0;
-    //bool Asm = true;
-    //BMP test("t2_24.bmp");
-    //BMP testC("t2_24.bmp");
-    //while (test.data.size() % threads != 0) threads--; //Pętla obcinająca ilość wątków do takiej, której uda się równo obsłużyć
-    int overflow = (bitmap.data_size / 3) % threads;
+    double chunkNum = ceil(bitmap.data_size/15.0);
+    int overflow = (int)chunkNum % threads;
     int usedOverflow = 0;
     int overflowC = (bitmap.data_size / 3) % threads;
     int usedOverflowC = 0;
     std::vector<std::thread> handler;
     std::vector<std::thread> handlerC;
-    //if (overflow != 0) std::cout << "Nierowne thready\n";
     if (!Asm) {
         Timer::start();
         for (int i = 0; i < threads; i++) {
             if (overflowC != 0) {
-                handlerC.push_back(std::thread(gaussTrf, bitmap.beginData + i * bitmap.data_size / threads + (usedOverflowC * 3)-6, (bitmap.beginData + (i + 1) * bitmap.data_size / threads) + 2 + (usedOverflowC * 3)-6, bitmap.bmp_info_header.width + 4));
+                handlerC.push_back(std::thread(gaussTrf, bitmap.beginData + i * bitmap.data_size / threads + (usedOverflowC * 3), (bitmap.beginData + (i + 1) * bitmap.data_size / threads) + 3 + (usedOverflowC * 3), blurred.beginData + i * bitmap.data_size / threads + (usedOverflowC * 3), bitmap.bmp_info_header.width + 4));
 
                 overflowC--;
                 usedOverflowC++;
             }
             else {
-                handlerC.push_back(std::thread(gaussTrf, bitmap.beginData + i * bitmap.data_size / threads + (usedOverflowC * 3)-6, (bitmap.beginData + (i + 1) * bitmap.data_size / threads) - 1 + (usedOverflowC * 3)-6, bitmap.bmp_info_header.width + 4));
+                handlerC.push_back(std::thread(gaussTrf, bitmap.beginData + i * bitmap.data_size / threads + (usedOverflowC * 3), (bitmap.beginData + (i + 1) * bitmap.data_size / threads) + (usedOverflowC * 3), blurred.beginData + i * blurred.data_size / threads + (usedOverflowC * 3), bitmap.bmp_info_header.width + 4));
             }
         }
         for (int i = 0; i < threads; i++) {
             handlerC[i].join();
         }
-        //gaussTrfAsm(test.beginData, test.beginData + test.data_size, test.bmp_info_header.width);
         time = Timer::stop();
     }
     else {
         Timer::start();
         for (int i = 0; i < threads; i++) {
             if (overflow != 0) {
-                handler.push_back(std::thread(gaussTrfAsm, bitmap.beginData + i * bitmap.data_size / threads + (usedOverflow * 3), (bitmap.beginData + (i + 1) * bitmap.data_size / threads) + 2 + (usedOverflow * 3) + 1, bitmap.bmp_info_header.width + 4));
+                handler.push_back(std::thread(gaussTrfAsm, bitmap.beginData + i * (int)(chunkNum/threads)*15 + (usedOverflow * 15), (bitmap.beginData + (i + 1) * (int)(chunkNum / threads) * 15) + 15 + (usedOverflow * 15), blurred.beginData + i * (int)(chunkNum / threads) * 15 + (usedOverflow * 15), bitmap.bmp_info_header.width + 4));
                 overflow--;
                 usedOverflow++;
             }
             else {
-                handler.push_back(std::thread(gaussTrfAsm, bitmap.beginData + i * bitmap.data_size / threads + (usedOverflow * 3), (bitmap.beginData + (i + 1) * bitmap.data_size / threads) - 1 + (usedOverflow * 3) + 1, bitmap.bmp_info_header.width + 4));
+                handler.push_back(std::thread(gaussTrfAsm, bitmap.beginData + i * (int)(chunkNum / threads) * 15 + (usedOverflow * 15), (bitmap.beginData + (i + 1) * (int)(chunkNum / threads) * 15) + (usedOverflow * 15), blurred.beginData + i * (int)(chunkNum / threads) * 15 + (usedOverflow * 15), bitmap.bmp_info_header.width + 4));
             }
         }
         for (int i = 0; i < threads; i++) {
             handler[i].join();
         }
-        //basicTrf(testC.data.data(), testC.data.data() + testC.data.size() - 1);
         time = Timer::stop();
     }
-
-    //if (overflowC != 0) std::cout << "Nierowne thready\n";
-
-
     bitmap.write("kopia.bmp");
     return time;
-    //testC.write("kopiaC.bmp");
+}
+double statisticalTest(wxString path, int threads, bool Asm) {
+    double time = 0;
+    for (int i = 0; i < 10; i++) {
+    BMP bitmap(path);
+    BMP blurred(path);
+    int overflow = (bitmap.data_size / 3) % threads;
+    int usedOverflow = 0;
+    int overflowC = (bitmap.data_size / 3) % threads;
+    int usedOverflowC = 0;
+    std::vector<std::thread> handler;
+    std::vector<std::thread> handlerC;
+        if (!Asm) {
+            Timer::start();
+            for (int i = 0; i < threads; i++) {
+                if (overflowC != 0) {
+                    handlerC.push_back(std::thread(gaussTrf, bitmap.beginData + i * bitmap.data_size / threads + (usedOverflowC * 3), (bitmap.beginData + (i + 1) * bitmap.data_size / threads) + 3 + (usedOverflowC * 3), blurred.beginData + i * bitmap.data_size / threads + (usedOverflowC * 3), bitmap.bmp_info_header.width + 4));
+
+                    overflowC--;
+                    usedOverflowC++;
+                }
+                else {
+                    handlerC.push_back(std::thread(gaussTrf, bitmap.beginData + i * bitmap.data_size / threads + (usedOverflowC * 3), (bitmap.beginData + (i + 1) * bitmap.data_size / threads) + (usedOverflowC * 3), blurred.beginData + i * blurred.data_size / threads + (usedOverflowC * 3), bitmap.bmp_info_header.width + 4));
+                }
+            }
+            for (int i = 0; i < threads; i++) {
+                handlerC[i].join();
+            }
+            time += Timer::stop();
+        }
+        else {
+            Timer::start();
+            for (int i = 0; i < threads; i++) {
+                if (overflow != 0) {
+                    handler.push_back(std::thread(gaussTrfAsm, bitmap.beginData + i * bitmap.data_size / threads + (usedOverflow * 3), (bitmap.beginData + (i + 1) * bitmap.data_size / threads) + 3 + (usedOverflow * 3), blurred.beginData + i * blurred.data_size / threads + (usedOverflow * 3), bitmap.bmp_info_header.width + 4));
+                    overflow--;
+                    usedOverflow++;
+                }
+                else {
+                    handler.push_back(std::thread(gaussTrfAsm, bitmap.beginData + i * bitmap.data_size / threads + (usedOverflow * 3), (bitmap.beginData + (i + 1) * bitmap.data_size / threads) + (usedOverflow * 3), blurred.beginData + i * blurred.data_size / threads + (usedOverflow * 3), bitmap.bmp_info_header.width + 4));
+                }
+            }
+            for (int i = 0; i < threads; i++) {
+                handler[i].join();
+            }
+            time += Timer::stop();
+        }
+    }
+    return time/10;
 }
  
 class MyApp : public wxApp
@@ -217,6 +255,7 @@ class MyFrame : public wxFrame
 public:
     MyFrame();
     wxButton* applyButton;
+    wxButton* testButton;
     wxRadioButton* asmButton;
     wxRadioButton* cppButton;
     wxGridSizer* topBox;
@@ -224,6 +263,7 @@ public:
     wxBoxSizer* sizerL = new wxBoxSizer(wxHORIZONTAL);
     wxBoxSizer* sizerR = new wxBoxSizer(wxHORIZONTAL);
     wxGridSizer* buttonBox;
+    wxGridSizer* buttonBox2;
     wxImagePanel* before;
     wxImagePanel* after;
     wxSlider* threads;
@@ -235,6 +275,7 @@ private:
     void OnAbout(wxCommandEvent& event);
     void OnApply(wxCommandEvent& event);
     void OnChange(wxCommandEvent& event);
+    void OnTest(wxCommandEvent& event);
     wxString path;
 };
 
@@ -245,7 +286,8 @@ enum
     ID_Asm = 3,
     ID_Cpp = 4,
     ID_Threads = 5,
-    ID_Dthreads = 6
+    ID_Dthreads = 6,
+    ID_Test = 7
 };
 
 bool MyApp::OnInit()
@@ -274,6 +316,7 @@ MyFrame::MyFrame()
     asmButton = new wxRadioButton(this, ID_Asm, _("Asm"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP, wxDefaultValidator, _("asmButton"));
     cppButton = new wxRadioButton(this, ID_Asm, _("C++"), wxDefaultPosition, wxDefaultSize, 0L, wxDefaultValidator, _("cppButton"));
     applyButton = new wxButton(this, ID_Apply, _("Apply Filter"), wxDefaultPosition, wxDefaultSize, 0L, wxDefaultValidator, _("applyButton"));
+    testButton = new wxButton(this, ID_Test, _("Test Performance"), wxDefaultPosition, wxDefaultSize, 0L, wxDefaultValidator, _("testButton"));
     threads = new wxSlider(this, ID_Threads, 2, 1, 64, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL, wxDefaultValidator, _("threadsSlider"));
     tDisplay = new wxStaticText(this, ID_Dthreads, wxString::Format(wxT("%d"), (int)threads->GetValue()), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER_HORIZONTAL);
     
@@ -286,6 +329,7 @@ MyFrame::MyFrame()
     topBox = new wxGridSizer(1, 3, 3, 3);
     leftBox = new wxGridSizer(6, 1, 3, 3);
     buttonBox = new wxGridSizer(1, 2, 3, 3);
+    buttonBox2 = new wxGridSizer(1, 2, 3, 3);
     leftBox->Add(new wxStaticText(this, -1, wxT("")), 0, wxEXPAND);
     buttonBox->Add(asmButton, 1, wxALIGN_CENTER);
     buttonBox->Add(cppButton, 1, wxALIGN_CENTER);
@@ -293,11 +337,14 @@ MyFrame::MyFrame()
     leftBox->Add(new wxStaticText(this, -1, wxT("")), 0, wxEXPAND);
     leftBox->Add(threads, 0, wxEXPAND, wxALIGN_CENTER);
     leftBox->Add(tDisplay, 0, wxEXPAND, wxALIGN_CENTER);
-    leftBox->Add(applyButton, 1, wxALIGN_CENTER);
+    buttonBox2->Add(applyButton, 1, wxALIGN_CENTER);
+    buttonBox2->Add(testButton, 1, wxALIGN_CENTER);
+    leftBox->Add(buttonBox2, 1, wxEXPAND);
     Bind(wxEVT_MENU, &MyFrame::OnLoad, this, ID_Load);
     Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
     Bind(wxEVT_MENU, &MyFrame::OnExit, this, wxID_EXIT);
     Bind(wxEVT_BUTTON, &MyFrame::OnApply, this, ID_Apply);
+    Bind(wxEVT_BUTTON, &MyFrame::OnTest, this, ID_Test);
     Bind(wxEVT_SLIDER, &MyFrame::OnChange, this, ID_Threads);
 
     topBox->Add(leftBox, 1, wxEXPAND);
@@ -348,6 +395,12 @@ void MyFrame::OnApply(wxCommandEvent& event) {
     after = new wxImagePanel(this, "kopia.bmp", wxBITMAP_TYPE_BMP);
     sizerR->Add(after, 1, wxEXPAND);
     Layout();
+}
+
+void MyFrame::OnTest(wxCommandEvent& event) {
+    double time = statisticalTest(path, threads->GetValue(), asmButton->GetValue());
+    std::string result = "Average time for 10 filter applications: " + std::to_string(time) + "ms";
+    wxMessageBox(_(result), "result", wxOK | wxICON_INFORMATION);
 }
 
 int main()

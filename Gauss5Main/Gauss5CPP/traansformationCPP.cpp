@@ -10,22 +10,26 @@ int basicTrf(uint8_t* beginPtr, uint8_t* endPtr) {
 	return 1;
 }
 
-int gaussTrf(uint8_t* beginPtr, uint8_t* endPtr, int width) {
+int gaussTrf(uint8_t* beginPtr, uint8_t* endPtr, uint8_t* copyBegin, int width) {
 	//beginPtr += 6 * width + 6;
 	//endPtr -= 6 * width - 6;
 	uint8_t* iteratorPtr = beginPtr;
+	uint8_t* copyPtr = copyBegin;
 	
 	while (iteratorPtr != endPtr)
 	{
 
-		*(iteratorPtr) = (*(iteratorPtr - 6) + *(iteratorPtr - 3) * 4 + *(iteratorPtr) * 6 + *(iteratorPtr + 3) * 4 + *(iteratorPtr + 6))>>4;
+		*(copyPtr) = (*(iteratorPtr - 6) + *(iteratorPtr - 3) * 4 + *(iteratorPtr) * 6 + *(iteratorPtr + 3) * 4 + *(iteratorPtr + 6))>>4;
 		iteratorPtr++;
+		copyPtr++;
 	}
 	iteratorPtr = beginPtr;
+	copyPtr = copyBegin;
 	while (iteratorPtr != endPtr)
 	{
-		*(iteratorPtr) = (*(iteratorPtr - width * 6) + *(iteratorPtr - width * 3) * 4 + *(iteratorPtr) * 6 + *(iteratorPtr + width * 3) * 4 + *(iteratorPtr + width * 6))>>4;
+		*(iteratorPtr) = (*(copyPtr - width * 6) + *(copyPtr - width * 3) * 4 + *(copyPtr) * 6 + *(copyPtr + width * 3) * 4 + *(copyPtr + width * 6))>>4;
 		iteratorPtr++;
+		copyPtr++;
 	}
 	
 	/*

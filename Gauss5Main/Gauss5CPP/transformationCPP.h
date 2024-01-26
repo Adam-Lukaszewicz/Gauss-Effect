@@ -8,4 +8,4 @@
 
 extern "C" TRANSFORMATIONCPP_API int basicTrf(uint8_t* beginPtr, uint8_t* endPtr);
 
-extern "C" TRANSFORMATIONCPP_API int gaussTrf(uint8_t * beginPtr, uint8_t * endPtr, int width);
+extern "C" TRANSFORMATIONCPP_API int gaussTrf(uint8_t * beginPtr, uint8_t * endPtr, uint8_t * copyBegin, int width);

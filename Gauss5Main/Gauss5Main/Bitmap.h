@@ -41,22 +41,6 @@ struct BMPColorHeader {
 };
 #pragma pack(pop)
 
-//void tR(const char* fname, uint32_t offset, uint8_t* target, size_t size) {
-//    std::ifstream inp{fname, std::ios_base::binary};
-//    inp.seekg(offset, inp.beg);
-//    inp.read((char*)target, size);
-//}
-//
-//void tRUneven(const char* fname, uint32_t offset, uint8_t* target, size_t size, int32_t rowNum, uint32_t rowStride, uint32_t newStride) {
-//    std::ifstream inp{fname, std::ios_base::binary};
-//    inp.seekg(offset, inp.beg);
-//    std::vector<uint8_t> paddingRow(newStride - rowStride);
-//    for (int r = 0; r < rowNum; ++r) {
-//        inp.read((char*)target + rowStride * r, rowStride);
-//        inp.read((char*)paddingRow.data(), paddingRow.size());
-//    }
-//}
-
 struct BMP {
     BMPFileHeader file_header;
     BMPInfoHeader bmp_info_header;
@@ -116,7 +100,7 @@ struct BMP {
                 throw std::runtime_error("The program can treat only BMP images with the origin in the bottom left corner!");
             }
 
-            data.resize((bmp_info_header.width + 4) * (bmp_info_header.height + 4) * bmp_info_header.bit_count / 8);
+            data.resize((bmp_info_header.width + 4) * (bmp_info_header.height + 5) * bmp_info_header.bit_count / 8);
             data_size = (bmp_info_header.width + 4) * bmp_info_header.height * bmp_info_header.bit_count / 8;
 
             // Here we check if we need to take into account row padding
@@ -126,6 +110,7 @@ struct BMP {
             //}
             //else {
                 uint32_t offset = (bmp_info_header.width + 4) * 2 * bmp_info_header.bit_count / 8;
+                uint32_t offsety = (bmp_info_header.width + 4) * 3 * bmp_info_header.bit_count / 8;
                 for (int i = 0; i < offset; i++) {
                     data[i] = 0;
                 }
@@ -144,7 +129,7 @@ struct BMP {
                         data[offset + (row_stride + 4 * bmp_info_header.bit_count / 8) * y + 2 * bmp_info_header.bit_count / 8 + i + row_stride] = 0;
                     }
                 }
-                for (int i = 0; i < offset; i++) {
+                for (int i = 0; i < offsety; i++) {
                     data[(bmp_info_header.width + 4) * (bmp_info_header.height + 2) * bmp_info_header.bit_count / 8 + i] = 0;
                 }
                 file_header.file_size += static_cast<uint32_t>(data.size()) + bmp_info_header.height * static_cast<uint32_t>(padding_row.size());
