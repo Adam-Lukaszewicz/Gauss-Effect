@@ -1,3 +1,4 @@
 LIBRARY Gauss5ASM
 EXPORTS basicTrfAsm
 EXPORTS gaussTrfAsm
+EXPORTS badAsm

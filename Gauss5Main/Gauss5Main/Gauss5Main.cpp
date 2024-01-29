@@ -11,15 +11,35 @@
 
 extern "C" int basicTrfAsm(uint8_t* beginPtr, uint8_t * endPtr);
 extern "C" int gaussTrfAsm(uint8_t * beginPtr, uint8_t * endPtr, uint8_t* copyBegin, int width);
+extern "C" int badAsm(uint8_t * beginPtr, uint8_t * endPtr, uint8_t * copyBegin, int width);
+
+double overheadFunc() {
+    return 1;
+}
+
+double overheadTest(int threads) {
+    Timer::start();
+    double time = 0;
+    std::vector<std::thread> handler;
+    for (int i = 0; i < threads; i++) {
+        handler.emplace_back(overheadFunc);
+    }
+    for (int i = 0; i < threads; i++) {
+        handler[i].join();
+    }
+    time = Timer::stop();
+}
 
 double filterApplication(wxString path, int threads, bool Asm) {
+    double time = 0;
     BMP bitmap(path);
     BMP blurred(path);
-    double time = 0;
-    double chunkNum = ceil(bitmap.data_size/15.0);
-    int overflow = (int)chunkNum % threads;
+    int processSize = 3;
+    int chunkNum = ceil(bitmap.data_size / processSize); //Amount of 5-pixel (or less - if the amount of pixels isnt divisible by 5 the tail of the image is still considered a full chunk) chunks in the image
+    int overflow = chunkNum % threads; //How many threads will have to take an extra chunk
+    int baseSlice = chunkNum * processSize / threads; //Base amount of data each thread processes
     int usedOverflow = 0;
-    int overflowC = (bitmap.data_size / 3) % threads;
+    int overflowC = bitmap.data_size % threads;
     int usedOverflowC = 0;
     std::vector<std::thread> handler;
     std::vector<std::thread> handlerC;
@@ -27,13 +47,13 @@ double filterApplication(wxString path, int threads, bool Asm) {
         Timer::start();
         for (int i = 0; i < threads; i++) {
             if (overflowC != 0) {
-                handlerC.push_back(std::thread(gaussTrf, bitmap.beginData + i * bitmap.data_size / threads + (usedOverflowC * 3), (bitmap.beginData + (i + 1) * bitmap.data_size / threads) + 3 + (usedOverflowC * 3), blurred.beginData + i * bitmap.data_size / threads + (usedOverflowC * 3), bitmap.bmp_info_header.width + 4));
+                handlerC.push_back(std::thread(gaussTrf, bitmap.beginData + i * bitmap.data_size / threads + usedOverflowC, (bitmap.beginData + (i + 1) * bitmap.data_size / threads) + 1 + usedOverflowC, blurred.beginData + i * bitmap.data_size / threads + usedOverflowC, bitmap.bmp_info_header.width + 4));
 
                 overflowC--;
                 usedOverflowC++;
             }
             else {
-                handlerC.push_back(std::thread(gaussTrf, bitmap.beginData + i * bitmap.data_size / threads + (usedOverflowC * 3), (bitmap.beginData + (i + 1) * bitmap.data_size / threads) + (usedOverflowC * 3), blurred.beginData + i * blurred.data_size / threads + (usedOverflowC * 3), bitmap.bmp_info_header.width + 4));
+                handlerC.push_back(std::thread(gaussTrf, bitmap.beginData + i * bitmap.data_size / threads + usedOverflowC, (bitmap.beginData + (i + 1) * bitmap.data_size / threads) + usedOverflowC, blurred.beginData + i * blurred.data_size / threads + usedOverflowC, bitmap.bmp_info_header.width + 4));
             }
         }
         for (int i = 0; i < threads; i++) {
@@ -44,16 +64,19 @@ double filterApplication(wxString path, int threads, bool Asm) {
     else {
         Timer::start();
         for (int i = 0; i < threads; i++) {
+            uint8_t* begin = bitmap.beginData + i * baseSlice + usedOverflow; //Start address for the thread
+            uint8_t* end = bitmap.beginData + (i + 1) * baseSlice + usedOverflow;
+            uint8_t* bufferBegin = blurred.beginData + i * baseSlice + usedOverflow;
             if (overflow != 0) {
-                handler.push_back(std::thread(gaussTrfAsm, bitmap.beginData + i * (int)(chunkNum/threads)*15 + (usedOverflow * 15), (bitmap.beginData + (i + 1) * (int)(chunkNum / threads) * 15) + 15 + (usedOverflow * 15), blurred.beginData + i * (int)(chunkNum / threads) * 15 + (usedOverflow * 15), bitmap.bmp_info_header.width + 4));
+                handler.push_back(std::thread(badAsm, begin, end + processSize, bufferBegin, bitmap.bmp_info_header.width + 4));
                 overflow--;
-                usedOverflow++;
+                usedOverflow+=processSize;
             }
             else {
-                handler.push_back(std::thread(gaussTrfAsm, bitmap.beginData + i * (int)(chunkNum / threads) * 15 + (usedOverflow * 15), (bitmap.beginData + (i + 1) * (int)(chunkNum / threads) * 15) + (usedOverflow * 15), blurred.beginData + i * (int)(chunkNum / threads) * 15 + (usedOverflow * 15), bitmap.bmp_info_header.width + 4));
+                handler.push_back(std::thread(badAsm, begin, end, bufferBegin, bitmap.bmp_info_header.width + 4));
             }
         }
-        for (int i = 0; i < threads; i++) {
+        for (int i = 0; i < handler.size(); i++) {
             handler[i].join();
         }
         time = Timer::stop();
@@ -64,25 +87,28 @@ double filterApplication(wxString path, int threads, bool Asm) {
 double statisticalTest(wxString path, int threads, bool Asm) {
     double time = 0;
     for (int i = 0; i < 10; i++) {
-    BMP bitmap(path);
-    BMP blurred(path);
-    int overflow = (bitmap.data_size / 3) % threads;
-    int usedOverflow = 0;
-    int overflowC = (bitmap.data_size / 3) % threads;
-    int usedOverflowC = 0;
-    std::vector<std::thread> handler;
-    std::vector<std::thread> handlerC;
+        BMP bitmap(path);
+        BMP blurred(path);
+        int processSize = 16;
+        int chunkNum = ceil(bitmap.data_size / processSize); //Amount of 5-pixel (or less - if the amount of pixels isnt divisible by 5 the tail of the image is still considered a full chunk) chunks in the image
+        int overflow = chunkNum % threads; //How many threads will have to take an extra chunk
+        int baseSlice = chunkNum * processSize / threads; //Base amount of data each thread processes
+        int usedOverflow = 0;
+        int overflowC = bitmap.data_size % threads;
+        int usedOverflowC = 0;
+        std::vector<std::thread> handler;
+        std::vector<std::thread> handlerC;
         if (!Asm) {
             Timer::start();
             for (int i = 0; i < threads; i++) {
                 if (overflowC != 0) {
-                    handlerC.push_back(std::thread(gaussTrf, bitmap.beginData + i * bitmap.data_size / threads + (usedOverflowC * 3), (bitmap.beginData + (i + 1) * bitmap.data_size / threads) + 3 + (usedOverflowC * 3), blurred.beginData + i * bitmap.data_size / threads + (usedOverflowC * 3), bitmap.bmp_info_header.width + 4));
+                    handlerC.push_back(std::thread(gaussTrf, bitmap.beginData + i * bitmap.data_size / threads + usedOverflowC, (bitmap.beginData + (i + 1) * bitmap.data_size / threads) + 1 + usedOverflowC, blurred.beginData + i * bitmap.data_size / threads + usedOverflowC, bitmap.bmp_info_header.width + 4));
 
                     overflowC--;
                     usedOverflowC++;
                 }
                 else {
-                    handlerC.push_back(std::thread(gaussTrf, bitmap.beginData + i * bitmap.data_size / threads + (usedOverflowC * 3), (bitmap.beginData + (i + 1) * bitmap.data_size / threads) + (usedOverflowC * 3), blurred.beginData + i * blurred.data_size / threads + (usedOverflowC * 3), bitmap.bmp_info_header.width + 4));
+                    handlerC.push_back(std::thread(gaussTrf, bitmap.beginData + i * bitmap.data_size / threads + usedOverflowC, (bitmap.beginData + (i + 1) * bitmap.data_size / threads) + usedOverflowC, blurred.beginData + i * blurred.data_size / threads + usedOverflowC, bitmap.bmp_info_header.width + 4));
                 }
             }
             for (int i = 0; i < threads; i++) {
@@ -93,16 +119,19 @@ double statisticalTest(wxString path, int threads, bool Asm) {
         else {
             Timer::start();
             for (int i = 0; i < threads; i++) {
+                uint8_t* begin = bitmap.beginData + i * baseSlice + usedOverflow; //Start address for the thread
+                uint8_t* end = bitmap.beginData + (i + 1) * baseSlice + usedOverflow;
+                uint8_t* bufferBegin = blurred.beginData + i * baseSlice + usedOverflow;
                 if (overflow != 0) {
-                    handler.push_back(std::thread(gaussTrfAsm, bitmap.beginData + i * bitmap.data_size / threads + (usedOverflow * 3), (bitmap.beginData + (i + 1) * bitmap.data_size / threads) + 3 + (usedOverflow * 3), blurred.beginData + i * blurred.data_size / threads + (usedOverflow * 3), bitmap.bmp_info_header.width + 4));
+                    handler.push_back(std::thread(gaussTrfAsm, begin, end + processSize, bufferBegin, bitmap.bmp_info_header.width + 4));
                     overflow--;
-                    usedOverflow++;
+                    usedOverflow += processSize;
                 }
                 else {
-                    handler.push_back(std::thread(gaussTrfAsm, bitmap.beginData + i * bitmap.data_size / threads + (usedOverflow * 3), (bitmap.beginData + (i + 1) * bitmap.data_size / threads) + (usedOverflow * 3), blurred.beginData + i * blurred.data_size / threads + (usedOverflow * 3), bitmap.bmp_info_header.width + 4));
+                    handler.push_back(std::thread(gaussTrfAsm, begin, end, bufferBegin, bitmap.bmp_info_header.width + 4));
                 }
             }
-            for (int i = 0; i < threads; i++) {
+            for (int i = 0; i < handler.size(); i++) {
                 handler[i].join();
             }
             time += Timer::stop();
@@ -133,53 +162,17 @@ public:
     void OnSize(wxSizeEvent& event);
     void render(wxDC& dc);
 
-    // some useful events
-    /*
-     void mouseMoved(wxMouseEvent& event);
-     void mouseDown(wxMouseEvent& event);
-     void mouseWheelMoved(wxMouseEvent& event);
-     void mouseReleased(wxMouseEvent& event);
-     void rightClick(wxMouseEvent& event);
-     void mouseLeftWindow(wxMouseEvent& event);
-     void keyPressed(wxKeyEvent& event);
-     void keyReleased(wxKeyEvent& event);
-     */
-
     DECLARE_EVENT_TABLE()
 };
 
 
 BEGIN_EVENT_TABLE(wxImagePanel, wxPanel)
-// some useful events
-/*
- EVT_MOTION(wxImagePanel::mouseMoved)
- EVT_LEFT_DOWN(wxImagePanel::mouseDown)
- EVT_LEFT_UP(wxImagePanel::mouseReleased)
- EVT_RIGHT_DOWN(wxImagePanel::rightClick)
- EVT_LEAVE_WINDOW(wxImagePanel::mouseLeftWindow)
- EVT_KEY_DOWN(wxImagePanel::keyPressed)
- EVT_KEY_UP(wxImagePanel::keyReleased)
- EVT_MOUSEWHEEL(wxImagePanel::mouseWheelMoved)
- */
 
  // catch paint events
     EVT_PAINT(wxImagePanel::paintEvent)
     //Size event
     EVT_SIZE(wxImagePanel::OnSize)
     END_EVENT_TABLE()
-
-
-    // some useful events
-    /*
-     void wxImagePanel::mouseMoved(wxMouseEvent& event) {}
-     void wxImagePanel::mouseDown(wxMouseEvent& event) {}
-     void wxImagePanel::mouseWheelMoved(wxMouseEvent& event) {}
-     void wxImagePanel::mouseReleased(wxMouseEvent& event) {}
-     void wxImagePanel::rightClick(wxMouseEvent& event) {}
-     void wxImagePanel::mouseLeftWindow(wxMouseEvent& event) {}
-     void wxImagePanel::keyPressed(wxKeyEvent& event) {}
-     void wxImagePanel::keyReleased(wxKeyEvent& event) {}
-     */
 
     wxImagePanel::wxImagePanel(wxFrame* parent, wxString file, wxBitmapType format) :
     wxPanel(parent)
@@ -190,11 +183,6 @@ BEGIN_EVENT_TABLE(wxImagePanel, wxPanel)
     h = -1;
 }
 
-/*
- * Called by the system of by wxWidgets when the panel needs
- * to be redrawn. You can also trigger this call by
- * calling Refresh()/Update().
- */
 
 void wxImagePanel::paintEvent(wxPaintEvent& evt)
 {
@@ -203,14 +191,6 @@ void wxImagePanel::paintEvent(wxPaintEvent& evt)
     render(dc);
 }
 
-/*
- * Alternatively, you can use a clientDC to paint on the panel
- * at any time. Using this generally does not free you from
- * catching paint events, since it is possible that e.g. the window
- * manager throws away your drawing when the window comes to the
- * background, and expects you will redraw it when the window comes
- * back (by sending a paint event).
- */
 void wxImagePanel::paintNow()
 {
     // depending on your system you may need to look at double-buffered dcs
@@ -218,11 +198,6 @@ void wxImagePanel::paintNow()
     render(dc);
 }
 
-/*
- * Here we do the actual rendering. I put it in a separate
- * method so that it can work no matter what type of DC
- * (e.g. wxPaintDC or wxClientDC) is used.
- */
 void wxImagePanel::render(wxDC& dc)
 {
     int neww, newh;
@@ -230,7 +205,7 @@ void wxImagePanel::render(wxDC& dc)
 
     if (neww != w || newh != h)
     {
-        resized = wxBitmap(image.Scale(neww, newh /*, wxIMAGE_QUALITY_HIGH*/));
+        resized = wxBitmap(image.Scale(neww, newh));
         w = neww;
         h = newh;
         dc.DrawBitmap(resized, 0, 0, false);
@@ -240,10 +215,6 @@ void wxImagePanel::render(wxDC& dc)
     }
 }
 
-/*
- * Here we call refresh to tell the panel to draw itself again.
- * So when the user resizes the image panel the image should be resized too.
- */
 void wxImagePanel::OnSize(wxSizeEvent& event) {
     Refresh();
     //skip the event.
@@ -399,67 +370,68 @@ void MyFrame::OnApply(wxCommandEvent& event) {
 
 void MyFrame::OnTest(wxCommandEvent& event) {
     double time = statisticalTest(path, threads->GetValue(), asmButton->GetValue());
+    //double time = overheadTest(threads->GetValue());
     std::string result = "Average time for 10 filter applications: " + std::to_string(time) + "ms";
     wxMessageBox(_(result), "result", wxOK | wxICON_INFORMATION);
 }
 
 int main()
 {
-    /*
-    int threads = 16;
-
-    bool Asm = false;
-    BMP test("t2_24.bmp");
-    BMP testC("t2_24.bmp");
-    //while (test.data.size() % threads != 0) threads--; //Pętla obcinająca ilość wątków do takiej, której uda się równo obsłużyć
-    int overflow = (test.data_size/3) % threads;
+    
+    int threads = 4;
+    BMP bitmap("testFINAL.bmp");
+    BMP blurred("testFINAL.bmp");
+    //BMP bitmap("t2_24.bmp");
+    //BMP blurred("t2_24.bmp");
+    bool Asm = true;
+    double time = 0;
+    int processSize = 16;
+    int chunkNum = ceil(bitmap.data_size / processSize); //Amount of 5-pixel (or less - if the amount of pixels isnt divisible by 5 the tail of the image is still considered a full chunk) chunks in the image
+    int overflow = chunkNum % threads; //How many threads will have to take an extra chunk
+    int baseSlice = chunkNum * processSize / threads; //Base amount of data each thread processes
     int usedOverflow = 0;
-    int overflowC = (testC.data_size/3) % threads;
+    int overflowC = bitmap.data_size % threads;
     int usedOverflowC = 0;
     std::vector<std::thread> handler;
     std::vector<std::thread> handlerC;
-    //if (overflow != 0) std::cout << "Nierowne thready\n";
-    if(!Asm){
+    if (!Asm) {
         Timer::start();
         for (int i = 0; i < threads; i++) {
             if (overflowC != 0) {
-                handlerC.push_back(std::thread(gaussTrf, testC.beginData + i * testC.data_size / threads + (usedOverflowC * 3), (testC.beginData + (i + 1) * testC.data_size / threads) + 2 + (usedOverflowC * 3), testC.bmp_info_header.width + 4));
+                handlerC.push_back(std::thread(gaussTrf, bitmap.beginData + i * bitmap.data_size / threads + usedOverflowC, (bitmap.beginData + (i + 1) * bitmap.data_size / threads) + 1 + usedOverflowC, blurred.beginData + i * bitmap.data_size / threads + usedOverflowC, bitmap.bmp_info_header.width + 4));
 
                 overflowC--;
                 usedOverflowC++;
             }
             else {
-                handlerC.push_back(std::thread(gaussTrf, testC.beginData + i * testC.data_size / threads + (usedOverflowC * 3), (testC.beginData + (i + 1) * testC.data_size / threads) - 1 + (usedOverflowC * 3), testC.bmp_info_header.width + 4));
+                handlerC.push_back(std::thread(gaussTrf, bitmap.beginData + i * bitmap.data_size / threads + usedOverflowC, (bitmap.beginData + (i + 1) * bitmap.data_size / threads) + usedOverflowC, blurred.beginData + i * blurred.data_size / threads + usedOverflowC, bitmap.bmp_info_header.width + 4));
             }
         }
         for (int i = 0; i < threads; i++) {
             handlerC[i].join();
         }
-        //gaussTrfAsm(test.beginData, test.beginData + test.data_size, test.bmp_info_header.width);
-        Timer::stop();
+        time = Timer::stop();
     }
     else {
         Timer::start();
         for (int i = 0; i < threads; i++) {
+            uint8_t* begin = bitmap.beginData + i * baseSlice + usedOverflow;
+            uint8_t* end = bitmap.beginData + (i + 1) * baseSlice + usedOverflow;
+            uint8_t* bufferBegin = blurred.beginData + i * baseSlice + usedOverflow;
             if (overflow != 0) {
-                handler.push_back(std::thread(gaussTrfAsm, test.beginData + i * test.data_size / threads + (usedOverflow * 3), (test.beginData + (i + 1) * test.data_size / threads) + 2 + (usedOverflow * 3) + 1, test.bmp_info_header.width + 4));
+                handler.push_back(std::thread(gaussTrfAsm, begin, end + processSize, bufferBegin, bitmap.bmp_info_header.width + 4));
                 overflow--;
-                usedOverflow++;
+                usedOverflow+=processSize;
             }
             else {
-                handler.push_back(std::thread(gaussTrfAsm, test.beginData + i * test.data_size / threads + (usedOverflow * 3), (test.beginData + (i + 1) * test.data_size / threads) - 1 + (usedOverflow * 3) + 1, test.bmp_info_header.width + 4));
+                handler.push_back(std::thread(gaussTrfAsm, begin, end, bufferBegin, bitmap.bmp_info_header.width + 4));
             }
         }
-        for (int i = 0; i < threads; i++) {
+        for (int i = 0; i < handler.size(); i++) {
             handler[i].join();
         }
-        //basicTrf(testC.data.data(), testC.data.data() + testC.data.size() - 1);
-        Timer::stop();
+        time = Timer::stop();
     }
+    bitmap.write("kopia.bmp");
     
-    //if (overflowC != 0) std::cout << "Nierowne thready\n";
-    
-    */
-    //test.write("kopia.bmp");
-    //testC.write("kopiaC.bmp");
 }

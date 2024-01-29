@@ -101,7 +101,7 @@ struct BMP {
             }
 
             data.resize((bmp_info_header.width + 4) * (bmp_info_header.height + 5) * bmp_info_header.bit_count / 8);
-            data_size = (bmp_info_header.width + 4) * bmp_info_header.height * bmp_info_header.bit_count / 8;
+            data_size = ((bmp_info_header.width + 4) * bmp_info_header.height - 4) * bmp_info_header.bit_count / 8;
 
             // Here we check if we need to take into account row padding
             //if (bmp_info_header.width % 4 == 0) {
