@@ -17,6 +17,13 @@ namespace Timer
         countStart = __rdtsc();
     }
 
+    void check() {
+        stop_counting = std::chrono::high_resolution_clock::now();
+        time = stop_counting - start_counting;
+        count = time.count() * 1000;
+        std::cout << "Aktualny czas od startu watku: " << count << "ms\n";
+    }
+
     double stop()
     {
         stop_counting = std::chrono::high_resolution_clock::now();

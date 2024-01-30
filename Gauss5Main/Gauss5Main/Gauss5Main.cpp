@@ -12,6 +12,8 @@
 extern "C" int basicTrfAsm(uint8_t* beginPtr, uint8_t * endPtr);
 extern "C" int gaussTrfAsm(uint8_t * beginPtr, uint8_t * endPtr, uint8_t* copyBegin, int width);
 extern "C" int badAsm(uint8_t * beginPtr, uint8_t * endPtr, uint8_t * copyBegin, int width);
+extern "C" int horizontalAsm(uint8_t * beginPtr, uint8_t * endPtr, uint8_t * copyBegin, int width);
+extern "C" int verticalAsm(uint8_t * beginPtr, uint8_t * endPtr, uint8_t * copyBegin, int width);
 
 double overheadFunc() {
     return 1;
@@ -379,14 +381,16 @@ int main()
 {
     
     int threads = 4;
-    BMP bitmap("testFINAL.bmp");
-    BMP blurred("testFINAL.bmp");
+    BMP bitmap("test4.bmp");
+    BMP blurred("test4.bmp");
     //BMP bitmap("t2_24.bmp");
     //BMP blurred("t2_24.bmp");
+    //std::vector<uint8_t> blurred = bitmap.data;
     bool Asm = true;
     double time = 0;
-    int processSize = 16;
-    int chunkNum = ceil(bitmap.data_size / processSize); //Amount of 5-pixel (or less - if the amount of pixels isnt divisible by 5 the tail of the image is still considered a full chunk) chunks in the image
+    double processSize = 16;
+    double temp = bitmap.data_size / processSize;
+    int chunkNum = ceil(temp); //Amount of 5-pixel (or less - if the amount of pixels isnt divisible by 5 the tail of the image is still considered a full chunk) chunks in the image
     int overflow = chunkNum % threads; //How many threads will have to take an extra chunk
     int baseSlice = chunkNum * processSize / threads; //Base amount of data each thread processes
     int usedOverflow = 0;
@@ -414,22 +418,65 @@ int main()
     }
     else {
         Timer::start();
+        
         for (int i = 0; i < threads; i++) {
             uint8_t* begin = bitmap.beginData + i * baseSlice + usedOverflow;
             uint8_t* end = bitmap.beginData + (i + 1) * baseSlice + usedOverflow;
             uint8_t* bufferBegin = blurred.beginData + i * baseSlice + usedOverflow;
             if (overflow != 0) {
-                handler.push_back(std::thread(gaussTrfAsm, begin, end + processSize, bufferBegin, bitmap.bmp_info_header.width + 4));
+                handler.push_back(std::thread(gaussTrfAsm, begin, end + (int)processSize, bufferBegin, bitmap.bmp_info_header.width + 4));
                 overflow--;
                 usedOverflow+=processSize;
             }
             else {
                 handler.push_back(std::thread(gaussTrfAsm, begin, end, bufferBegin, bitmap.bmp_info_header.width + 4));
             }
+            Timer::check();
+        }
+        std::cout << "\n";
+        for (int i = 0; i < handler.size(); i++) {
+            handler[i].join();
+            Timer::check();
+        }
+        
+        /*
+        for (int i = 0; i < threads; i++) {
+            uint8_t* begin = bitmap.beginData + i * baseSlice + usedOverflow;
+            uint8_t* end = bitmap.beginData + (i + 1) * baseSlice + usedOverflow;
+            uint8_t* bufferBegin = blurred.beginData + i * baseSlice + usedOverflow;
+            if (overflow != 0) {
+                handler.push_back(std::thread(horizontalAsm, begin, end + processSize, bufferBegin, bitmap.bmp_info_header.width + 4));
+                overflow--;
+                usedOverflow += processSize;
+            }
+            else {
+                handler.push_back(std::thread(horizontalAsm, begin, end, bufferBegin, bitmap.bmp_info_header.width + 4));
+            }
         }
         for (int i = 0; i < handler.size(); i++) {
             handler[i].join();
         }
+        int overflow = chunkNum % threads; //How many threads will have to take an extra chunk
+        int usedOverflow = 0;
+        handler.clear();
+        
+        for (int i = 0; i < threads; i++) {
+            uint8_t* begin = blurred.beginData + i * baseSlice + usedOverflow;
+            uint8_t* end = blurred.beginData + (i + 1) * baseSlice + usedOverflow;
+            uint8_t* bufferBegin = bitmap.beginData + i * baseSlice + usedOverflow;
+            if (overflow != 0) {
+                handler.push_back(std::thread(verticalAsm, begin, end + processSize, bufferBegin, bitmap.bmp_info_header.width + 4));
+                overflow--;
+                usedOverflow += processSize;
+            }
+            else {
+                handler.push_back(std::thread(verticalAsm, begin, end, bufferBegin, bitmap.bmp_info_header.width + 4));
+            }
+        }
+        for (int i = 0; i < handler.size(); i++) {
+            handler[i].join();
+        }
+        */
         time = Timer::stop();
     }
     bitmap.write("kopia.bmp");
